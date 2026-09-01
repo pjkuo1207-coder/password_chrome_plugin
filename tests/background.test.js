@@ -1,10 +1,24 @@
 function createChromeMock() {
   const listeners = {};
+  const historyStore = {};
   const chrome = {
     runtime: {
       onInstalled: {
         addListener: jest.fn((fn) => {
           listeners.installed = fn;
+        }),
+      },
+    },
+    storage: {
+      local: {
+        get: jest.fn((key) => Promise.resolve({ [key]: historyStore[key] })),
+        set: jest.fn((obj) => {
+          Object.assign(historyStore, obj);
+          return Promise.resolve();
+        }),
+        remove: jest.fn((key) => {
+          delete historyStore[key];
+          return Promise.resolve();
         }),
       },
     },
@@ -117,6 +131,11 @@ describe('background', () => {
       ([, message]) => message.type === 'SMARTPASS_COPY_PASSWORD'
     );
     expect(copyCall[1].password.length).toBeGreaterThan(0);
+  });
+
+  it('records the generated password to local history', async () => {
+    await listeners.contextMenuClicked({ menuItemId: bg.CONTEXT_MENU_FILL_ID }, { id: 11 });
+    expect(chrome.storage.local.set).toHaveBeenCalledTimes(1);
   });
 
   it('swallows injection/messaging failures instead of throwing from the handler', async () => {

@@ -4,7 +4,7 @@
 const { detectPasswordFieldRules, fillFocusedPasswordField } = require('../src/content/index');
 
 describe('detectPasswordFieldRules', () => {
-  it('returns constraints for each password input on the page, ignoring other inputs', () => {
+  it('returns the target password field\'s constraints, ignoring other inputs', () => {
     document.body.innerHTML = `
       <input type="password" minlength="8" maxlength="20" pattern="[a-zA-Z0-9]+" />
       <input type="text" />
@@ -17,6 +17,22 @@ describe('detectPasswordFieldRules', () => {
   it('returns an empty array when there is no password field', () => {
     document.body.innerHTML = '<input type="text" />';
     expect(detectPasswordFieldRules()).toEqual([]);
+  });
+
+  it('detects the focused field\'s constraints when a page has multiple password fields', () => {
+    // e.g. a "current password" field (loose/no rules) and a "new password"
+    // field (strict rules) on the same form — detection must agree with
+    // fillFocusedPasswordField about which one is the target, or a
+    // generated password could satisfy the wrong field's constraints.
+    document.body.innerHTML = `
+      <input type="password" id="current" />
+      <input type="password" id="new" minlength="12" maxlength="16" pattern="[A-Za-z0-9]+" />
+    `;
+    document.getElementById('new').focus();
+
+    expect(detectPasswordFieldRules()).toEqual([
+      { minLength: 12, maxLength: 16, pattern: '[A-Za-z0-9]+' },
+    ]);
   });
 });
 

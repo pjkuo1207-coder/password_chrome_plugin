@@ -123,4 +123,45 @@ describe('popup', () => {
     expect(status.hidden).toBe(false);
     expect(status.textContent).toMatch(/could not find the password field/i);
   });
+
+  it('routes Copy through the content script (so the auto-clear timer outlives the popup) and does not double-write history', async () => {
+    const chrome = mockChrome({
+      sendMessageImpl: (tabId, message) => {
+        if (message.type === 'SMARTPASS_DETECT_RULES') return Promise.resolve({ rules: [] });
+        if (message.type === 'SMARTPASS_COPY_PASSWORD') return Promise.resolve({ copied: true });
+        return Promise.resolve({});
+      },
+    });
+    require('../src/popup/popup');
+    await flush();
+
+    expect(chrome.storage.local.set).toHaveBeenCalledTimes(1);
+
+    document.getElementById('copyBtn').dispatchEvent(new Event('click'));
+    await flush();
+
+    const copyCall = chrome.tabs.sendMessage.mock.calls.find(
+      ([, message]) => message.type === 'SMARTPASS_COPY_PASSWORD'
+    );
+    expect(copyCall).toBeDefined();
+    expect(chrome.storage.local.set).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a friendly message instead of crashing when every character type is disabled', async () => {
+    mockChrome({ rules: [] });
+    require('../src/popup/popup');
+    await flush();
+
+    const previousValue = document.getElementById('passwordOutput').value;
+    ['optUppercase', 'optLowercase', 'optNumbers', 'optSymbols'].forEach((id) => {
+      document.getElementById(id).checked = false;
+    });
+    document.getElementById('generateBtn').dispatchEvent(new Event('click'));
+    await flush();
+
+    expect(document.getElementById('passwordOutput').value).toBe(previousValue);
+    const status = document.getElementById('detectStatus');
+    expect(status.hidden).toBe(false);
+    expect(status.textContent).toMatch(/enable at least one character type/i);
+  });
 });

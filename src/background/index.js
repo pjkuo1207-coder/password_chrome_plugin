@@ -4,8 +4,8 @@
 // to content/index.js, injected on demand — see that file's header comment
 // for why it's not statically declared in manifest.json.
 
-const { generatePassword } = require('../core/generator');
-const { suggestRuleFromConstraints } = require('../core/domParser');
+const { generateConstrainedPassword } = require('../core/constrainedGenerator');
+const { addToHistory } = require('../core/storage');
 const { injectContentScript } = require('../core/inject');
 
 const CONTEXT_MENU_FILL_ID = 'smartpass-fill';
@@ -26,8 +26,8 @@ function createContextMenus() {
 
 // Content script must already be injected before this is called. A missing
 // or unresponsive listener (no password field ever detected, tab navigated
-// away) is a normal outcome here, not an error — callers just get no
-// constraints back and generate a plain password instead.
+// away) is a normal outcome here, not an error — the caller just gets no
+// constraints back and generates a plain password instead.
 async function detectConstraints(tabId) {
   const response = await chrome.tabs
     .sendMessage(tabId, { type: 'SMARTPASS_DETECT_RULES' })
@@ -37,19 +37,20 @@ async function detectConstraints(tabId) {
 
 async function generatePasswordForTab(tabId) {
   const constraints = await detectConstraints(tabId);
-  const options = constraints ? suggestRuleFromConstraints(constraints) : undefined;
-  return generatePassword(options);
+  return generateConstrainedPassword({}, constraints);
 }
 
 async function generateAndFill(tabId) {
   await injectContentScript(tabId);
   const password = await generatePasswordForTab(tabId);
+  await addToHistory(password);
   return chrome.tabs.sendMessage(tabId, { type: 'SMARTPASS_FILL_PASSWORD', password });
 }
 
 async function generateAndCopy(tabId) {
   await injectContentScript(tabId);
   const password = await generatePasswordForTab(tabId);
+  await addToHistory(password);
   return chrome.tabs.sendMessage(tabId, { type: 'SMARTPASS_COPY_PASSWORD', password });
 }
 

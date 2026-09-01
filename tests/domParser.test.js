@@ -5,6 +5,8 @@ const {
   parseInputConstraints,
   suggestRuleFromConstraints,
   findPasswordInputs,
+  parseCharacterClass,
+  applyPatternQuantifier,
 } = require('../src/core/domParser');
 
 function makeInput({ minlength, maxlength, pattern, type = 'password' } = {}) {
@@ -36,6 +38,48 @@ describe('parseInputConstraints', () => {
   });
 });
 
+describe('parseCharacterClass', () => {
+  it('expands a simple range', () => {
+    expect(parseCharacterClass('[a-c]')).toBe('abc');
+  });
+
+  it('handles a mix of ranges and literal characters', () => {
+    const result = parseCharacterClass('[a-cXY]');
+    expect([...result].sort().join('')).toBe('XYabc');
+  });
+
+  it('handles a backslash-escaped literal instead of treating it as a range', () => {
+    expect(parseCharacterClass('[a\\-z]')).toBe('a-z');
+  });
+
+  it('deduplicates repeated/overlapping characters', () => {
+    expect(parseCharacterClass('[a-ca-c]')).toBe('abc');
+  });
+
+  it('returns null for a negated class', () => {
+    expect(parseCharacterClass('[^abc]')).toBeNull();
+  });
+
+  it('returns null when there is no bracket at all', () => {
+    expect(parseCharacterClass('^\\d{4}$')).toBeNull();
+  });
+});
+
+describe('applyPatternQuantifier', () => {
+  it('sets an exact length from a {n} quantifier', () => {
+    expect(applyPatternQuantifier('^[A-F0-9]{8}$', { length: 16 }).length).toBe(8);
+  });
+
+  it('clamps an out-of-range length into a {min,max} quantifier', () => {
+    expect(applyPatternQuantifier('^[a-z]{8,20}$', { length: 30 }).length).toBe(20);
+    expect(applyPatternQuantifier('^[a-z]{8,20}$', { length: 3 }).length).toBe(8);
+  });
+
+  it('leaves options untouched when there is no quantifier', () => {
+    expect(applyPatternQuantifier('^[a-z]+$', { length: 16 }).length).toBe(16);
+  });
+});
+
 describe('suggestRuleFromConstraints', () => {
   it('caps length to maxLength', () => {
     const options = suggestRuleFromConstraints({ minLength: null, maxLength: 10, pattern: null }, {
@@ -51,40 +95,52 @@ describe('suggestRuleFromConstraints', () => {
     expect(options.length).toBe(20);
   });
 
-  it('disables symbols for alphanumeric-only patterns', () => {
+  it('builds a custom charset from a simple bracket pattern', () => {
     const options = suggestRuleFromConstraints({
       minLength: null,
       maxLength: null,
       pattern: '^[a-zA-Z0-9]+$',
     });
-    expect(options.symbols).toBe(false);
+    expect(options.customCharset).toHaveLength(62);
+    expect(options.customCharset).not.toMatch(/[^a-zA-Z0-9]/);
   });
 
-  it('disables symbols for a length-quantified alphanumeric-only pattern', () => {
+  it('builds an exact charset for a narrow class like hex digits, and reads its {n} length', () => {
     const options = suggestRuleFromConstraints({
       minLength: null,
       maxLength: null,
-      pattern: '^[a-zA-Z0-9]{8,20}$',
+      pattern: '^[A-Fa-f0-9]{8}$',
     });
-    expect(options.symbols).toBe(false);
+    expect([...options.customCharset].sort().join('')).toBe(
+      [...'ABCDEFabcdef0123456789'].sort().join('')
+    );
+    expect(options.length).toBe(8);
   });
 
-  it('disables symbols regardless of the character class ordering', () => {
+  it('does not build a custom charset for a negated class', () => {
     const options = suggestRuleFromConstraints({
       minLength: null,
       maxLength: null,
-      pattern: '^[A-Za-z0-9]+$',
+      pattern: '^[^<>]+$',
     });
-    expect(options.symbols).toBe(false);
+    expect(options.customCharset).toBeUndefined();
   });
 
-  it('does not disable symbols when the pattern explicitly allows them', () => {
-    const options = suggestRuleFromConstraints({
-      minLength: null,
-      maxLength: null,
-      pattern: '^[a-zA-Z0-9!@#]{8,20}$',
-    });
-    expect(options.symbols).toBeUndefined();
+  it('derives length from a {min,max} quantifier with no maxlength attribute at all', () => {
+    const options = suggestRuleFromConstraints(
+      { minLength: null, maxLength: null, pattern: '^[a-zA-Z0-9]{8,20}$' },
+      { length: 30 }
+    );
+    expect(options.length).toBe(20);
+  });
+
+  it('leaves options unchanged for an unparseable pattern rather than guessing', () => {
+    const options = suggestRuleFromConstraints(
+      { minLength: null, maxLength: null, pattern: '^\\w{8,20}$' },
+      { length: 16 }
+    );
+    expect(options.customCharset).toBeUndefined();
+    expect(options.length).toBe(16);
   });
 });
 

@@ -5,7 +5,10 @@ const {
   clearHistory,
   copyToClipboardWithAutoClear,
 } = require('../core/storage');
-const { generateConstrainedPassword, describeDetectedField } = require('../core/popupLogic');
+const {
+  generateConstrainedPassword,
+  describeDetectedField,
+} = require('../core/constrainedGenerator');
 const { injectContentScript } = require('../core/inject');
 
 const els = {
@@ -54,7 +57,15 @@ function generate() {
       symbols: els.optSymbols.checked,
       excludeAmbiguous: els.optExcludeAmbiguous.checked,
     };
-    value = generateConstrainedPassword(baseOptions, detectedConstraints);
+    try {
+      value = generateConstrainedPassword(baseOptions, detectedConstraints);
+    } catch {
+      // Only reachable when baseOptions itself is invalid — the user
+      // unchecked every character-type checkbox. Leave the previous output
+      // and history alone rather than clearing them.
+      setDetectStatus('Enable at least one character type (uppercase, lowercase, numbers, or symbols).');
+      return;
+    }
   }
 
   els.output.value = value;
@@ -125,9 +136,33 @@ async function detectPageRules() {
 
 els.generateBtn.addEventListener('click', generate);
 
-els.copyBtn.addEventListener('click', () => {
+els.copyBtn.addEventListener('click', async () => {
   if (!els.output.value) return;
-  copyToClipboardWithAutoClear(els.output.value);
+
+  // Route the copy through the content script when possible: its JS
+  // context lives with the tab, not the popup, so the 30s auto-clear timer
+  // survives the popup closing — which Chrome does the moment the user
+  // clicks away, i.e. almost immediately after copying to go paste it
+  // somewhere. A setTimeout scheduled in the popup's own context (the
+  // fallback below) would simply never fire in that — the common — case.
+  if (activeTabId) {
+    try {
+      await injectContentScript(activeTabId);
+      const response = await chrome.tabs.sendMessage(activeTabId, {
+        type: 'SMARTPASS_COPY_PASSWORD',
+        password: els.output.value,
+      });
+      if (response?.copied) return;
+    } catch {
+      // Falls through to the direct-write fallback below.
+    }
+  }
+
+  try {
+    await copyToClipboardWithAutoClear(els.output.value);
+  } catch {
+    setDetectStatus('Could not copy to the clipboard — try selecting and copying the text manually.');
+  }
 });
 
 els.fillBtn.addEventListener('click', async () => {

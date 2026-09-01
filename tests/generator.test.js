@@ -45,6 +45,25 @@ describe('generatePassword', () => {
     const passwords = new Set(Array.from({ length: 20 }, () => generatePassword()));
     expect(passwords.size).toBeGreaterThan(1);
   });
+
+  it('draws only from customCharset when provided, ignoring the boolean toggles', () => {
+    const password = generatePassword({
+      length: 20,
+      customCharset: 'AB',
+      uppercase: false,
+      lowercase: false,
+      numbers: false,
+      symbols: false,
+    });
+    expect(password).toHaveLength(20);
+    expect([...password].every((c) => c === 'A' || c === 'B')).toBe(true);
+  });
+
+  it('throws instead of hanging if excludeAmbiguous strips a customCharset down to nothing', () => {
+    expect(() =>
+      generatePassword({ length: 4, customCharset: 'Il1O0o', excludeAmbiguous: true })
+    ).toThrow();
+  });
 });
 
 describe('generatePronounceable', () => {
@@ -56,6 +75,11 @@ describe('generatePronounceable', () => {
   it('respects a custom length before the numeric suffix', () => {
     const value = generatePronounceable({ length: 10, appendNumber: false });
     expect(value).toHaveLength(10);
+  });
+
+  it('honors the requested total length even with the numeric suffix included', () => {
+    expect(generatePronounceable({ length: 8 })).toHaveLength(8);
+    expect(generatePronounceable({ length: 4 })).toHaveLength(4);
   });
 });
 

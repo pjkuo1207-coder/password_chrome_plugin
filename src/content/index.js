@@ -3,19 +3,28 @@
 // the extension off every page by default and avoids requesting <all_urls>.
 
 const { findPasswordInputs, parseInputConstraints } = require('../core/domParser');
-const { addToHistory, copyToClipboardWithAutoClear } = require('../core/storage');
+const { copyToClipboardWithAutoClear } = require('../core/storage');
+
+// Detection and fill must agree on which field they're talking about — a
+// page can have more than one password field (e.g. "current password" and
+// "new password", each with different minlength/maxlength/pattern), and
+// detecting the first one's rules while filling whichever field happens to
+// be focused would silently apply the wrong field's constraints.
+function getTargetPasswordField() {
+  const active = document.activeElement;
+  if (active && active.tagName === 'INPUT' && active.type === 'password') {
+    return active;
+  }
+  return findPasswordInputs(document)[0] || null;
+}
 
 function detectPasswordFieldRules() {
-  return findPasswordInputs(document).map((el) => parseInputConstraints(el));
+  const target = getTargetPasswordField();
+  return target ? [parseInputConstraints(target)] : [];
 }
 
 function fillFocusedPasswordField(value) {
-  const active = document.activeElement;
-  const target =
-    active && active.tagName === 'INPUT' && active.type === 'password'
-      ? active
-      : findPasswordInputs(document)[0];
-
+  const target = getTargetPasswordField();
   if (!target) return false;
 
   target.value = value;
@@ -32,18 +41,18 @@ function fillFocusedPasswordField(value) {
 if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage && !window.__smartpassLoaded) {
   window.__smartpassLoaded = true;
 
+  // History is recorded once, by whichever code actually generated the
+  // password (popup.js's generate(), or background/index.js's
+  // generateAndFill/generateAndCopy) — not here. A fill/copy action re-uses
+  // an already-generated (and already-recorded) password, so recording it
+  // again here would double-write the 5-slot history for one generation.
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message?.type === 'SMARTPASS_DETECT_RULES') {
       sendResponse({ rules: detectPasswordFieldRules() });
     } else if (message?.type === 'SMARTPASS_FILL_PASSWORD') {
-      const filled = fillFocusedPasswordField(message.password);
-      if (filled) addToHistory(message.password);
-      sendResponse({ filled });
+      sendResponse({ filled: fillFocusedPasswordField(message.password) });
     } else if (message?.type === 'SMARTPASS_COPY_PASSWORD') {
-      Promise.all([
-        copyToClipboardWithAutoClear(message.password),
-        addToHistory(message.password),
-      ])
+      copyToClipboardWithAutoClear(message.password)
         .then(() => sendResponse({ copied: true }))
         .catch(() => sendResponse({ copied: false }));
       return true; // keep the message channel open for the async response
