@@ -68,5 +68,4 @@ npm run lint           # ESLint 檢查 src/ 與 tests/
 npm run format         # Prettier 格式化
 ```
 
-更多架構細節請見 [`CLAUDE.md`](./CLAUDE.md)；原始開發計畫見 [`plan.pdf`](./plan.pdf)。
 上架 Chrome Web Store 的詳細步驟請見 [`PUBLISHING.md`](./PUBLISHING.md)。
