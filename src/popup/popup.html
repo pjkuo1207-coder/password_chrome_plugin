@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SmartPass</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>SmartPass</h1>
+
+      <section class="output">
+        <input type="text" id="passwordOutput" readonly aria-label="Generated password" />
+        <button id="copyBtn" title="Copy (auto-clears in 30s)">Copy</button>
+      </section>
+
+      <section class="mode">
+        <label><input type="radio" name="mode" value="password" checked /> Random</label>
+        <label><input type="radio" name="mode" value="pronounceable" /> Pronounceable</label>
+        <label><input type="radio" name="mode" value="passphrase" /> Passphrase</label>
+      </section>
+
+      <section class="options" id="passwordOptions">
+        <label>Length: <span id="lengthValue">16</span>
+          <input type="range" id="lengthRange" min="8" max="64" value="16" />
+        </label>
+        <label><input type="checkbox" id="optUppercase" checked /> Uppercase (A-Z)</label>
+        <label><input type="checkbox" id="optLowercase" checked /> Lowercase (a-z)</label>
+        <label><input type="checkbox" id="optNumbers" checked /> Numbers (0-9)</label>
+        <label><input type="checkbox" id="optSymbols" checked /> Symbols (!@#$)</label>
+        <label><input type="checkbox" id="optExcludeAmbiguous" /> Exclude ambiguous (Il1O0)</label>
+      </section>
+
+      <button id="generateBtn">Generate</button>
+
+      <section class="history">
+        <div class="history-header">
+          <h2>Recent (local only)</h2>
+          <button id="clearHistoryBtn">Clear</button>
+        </div>
+        <ul id="historyList"></ul>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
