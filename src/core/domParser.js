@@ -1,3 +1,29 @@
+const { CHARSETS } = require('./generator');
+
+/**
+ * Heuristic check for whether a `pattern` attribute's character class allows
+ * only letters/digits. Only inspects the content of the first `[...]` class
+ * rather than trying to fully parse the pattern, so it works regardless of
+ * the surrounding anchors/quantifiers (`{8,20}`, `+`, `*`, ...) or the
+ * ordering of ranges (`a-zA-Z0-9` vs `A-Za-z0-9`).
+ * @param {string} pattern
+ * @returns {boolean}
+ */
+function isAlphanumericOnlyPattern(pattern) {
+  const bracketMatch = pattern.match(/\[([^\]]*)\]/);
+  if (!bracketMatch) return false;
+  const classContent = bracketMatch[1];
+
+  // Strip alnum ranges like a-z / A-Z / 0-9 first — otherwise the '-' that
+  // separates a range would look like a literal hyphen, which is itself one
+  // of our symbol characters, and produce a false negative.
+  const withoutRanges = classContent.replace(/[a-zA-Z0-9]-[a-zA-Z0-9]/g, '');
+  const hasSymbol = [...CHARSETS.symbols].some((ch) => withoutRanges.includes(ch));
+  const hasAlnum = /[a-zA-Z0-9]/.test(classContent);
+
+  return hasAlnum && !hasSymbol;
+}
+
 /**
  * Reads length/pattern constraints off a password-like <input> element.
  * @param {HTMLInputElement} inputEl
@@ -33,12 +59,9 @@ function suggestRuleFromConstraints(constraints, defaults = {}) {
     options.length = Math.max(options.length || minLength, minLength);
   }
 
-  if (pattern) {
+  if (pattern && isAlphanumericOnlyPattern(pattern)) {
     // Sites that forbid symbols commonly express it via an alphanumeric-only pattern.
-    const isAlphanumericOnly = /^\^?\[?a-zA-Z0-9\]?\+?\$?$/.test(pattern.replace(/\\/g, ''));
-    if (isAlphanumericOnly) {
-      options.symbols = false;
-    }
+    options.symbols = false;
   }
 
   return options;

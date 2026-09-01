@@ -59,6 +59,33 @@ describe('suggestRuleFromConstraints', () => {
     });
     expect(options.symbols).toBe(false);
   });
+
+  it('disables symbols for a length-quantified alphanumeric-only pattern', () => {
+    const options = suggestRuleFromConstraints({
+      minLength: null,
+      maxLength: null,
+      pattern: '^[a-zA-Z0-9]{8,20}$',
+    });
+    expect(options.symbols).toBe(false);
+  });
+
+  it('disables symbols regardless of the character class ordering', () => {
+    const options = suggestRuleFromConstraints({
+      minLength: null,
+      maxLength: null,
+      pattern: '^[A-Za-z0-9]+$',
+    });
+    expect(options.symbols).toBe(false);
+  });
+
+  it('does not disable symbols when the pattern explicitly allows them', () => {
+    const options = suggestRuleFromConstraints({
+      minLength: null,
+      maxLength: null,
+      pattern: '^[a-zA-Z0-9!@#]{8,20}$',
+    });
+    expect(options.symbols).toBeUndefined();
+  });
 });
 
 describe('findPasswordInputs', () => {

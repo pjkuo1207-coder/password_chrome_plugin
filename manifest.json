@@ -3,7 +3,7 @@
   "name": "SmartPass — Smart Password Generator",
   "version": "0.1.0",
   "description": "Privacy-first password generator with smart DOM rule matching, passphrase/pronounceable modes, and auto-clearing clipboard. Fully offline.",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "contextMenus"],
   "background": {
     "service_worker": "background.js"
   },
@@ -19,5 +19,21 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+U",
+        "mac": "Command+Shift+U"
+      },
+      "description": "Open the SmartPass popup"
+    },
+    "generate-and-copy": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+G",
+        "mac": "Command+Shift+G"
+      },
+      "description": "Generate a password and copy it, without opening the popup"
+    }
   }
 }

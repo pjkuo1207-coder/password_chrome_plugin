@@ -69,11 +69,26 @@ button:hover {
   border-color: var(--accent);
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+}
+
 #generateBtn {
   background: var(--accent);
   border-color: var(--accent);
   color: white;
   font-weight: 600;
+}
+
+.detect-status {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .mode,

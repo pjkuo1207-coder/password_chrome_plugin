@@ -14,6 +14,8 @@
         <button id="copyBtn" title="Copy (auto-clears in 30s)">Copy</button>
       </section>
 
+      <p id="detectStatus" class="detect-status" hidden></p>
+
       <section class="mode">
         <label><input type="radio" name="mode" value="password" checked /> Random</label>
         <label><input type="radio" name="mode" value="pronounceable" /> Pronounceable</label>
@@ -31,7 +33,10 @@
         <label><input type="checkbox" id="optExcludeAmbiguous" /> Exclude ambiguous (Il1O0)</label>
       </section>
 
-      <button id="generateBtn">Generate</button>
+      <div class="actions">
+        <button id="generateBtn">Generate</button>
+        <button id="fillBtn" hidden>Fill field</button>
+      </div>
 
       <section class="history">
         <div class="history-header">
