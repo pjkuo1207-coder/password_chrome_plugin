@@ -5,11 +5,11 @@
 const { findPasswordInputs, parseInputConstraints } = require('../core/domParser');
 const { copyToClipboardWithAutoClear } = require('../core/storage');
 
-// Detection and fill must agree on which field they're talking about — a
-// page can have more than one password field (e.g. "current password" and
-// "new password", each with different minlength/maxlength/pattern), and
-// detecting the first one's rules while filling whichever field happens to
-// be focused would silently apply the wrong field's constraints.
+// Detection must agree with fill about which *password* field it's talking
+// about — a page can have more than one (e.g. "current password" and "new
+// password", each with different minlength/maxlength/pattern) — so this
+// stays password-specific: it's only ever used to size a generated password
+// to match a site's own validation.
 function getTargetPasswordField() {
   const active = document.activeElement;
   if (active && active.tagName === 'INPUT' && active.type === 'password') {
@@ -23,8 +23,28 @@ function detectPasswordFieldRules() {
   return target ? [parseInputConstraints(target)] : [];
 }
 
+// Fill, unlike detection, isn't password-specific — the context menu's
+// "fill this field" entry (contexts: ['editable']) is meant to work on any
+// text-like field the user right-clicked, e.g. a "confirm password" input a
+// site left as type="text", or a plain text field the user wants a random
+// string in. Only falls back to searching for a password field when nothing
+// fillable is actually focused (e.g. triggered without a specific target).
+const FILLABLE_INPUT_TYPES = new Set(['text', 'password', 'email', 'search', 'tel', 'url', 'number']);
+
+function isFillableField(el) {
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA') return true;
+  return el.tagName === 'INPUT' && FILLABLE_INPUT_TYPES.has((el.type || 'text').toLowerCase());
+}
+
+function getFillTarget() {
+  const active = document.activeElement;
+  if (isFillableField(active)) return active;
+  return findPasswordInputs(document)[0] || null;
+}
+
 function fillFocusedPasswordField(value) {
-  const target = getTargetPasswordField();
+  const target = getFillTarget();
   if (!target) return false;
 
   target.value = value;

@@ -7,43 +7,78 @@
   </head>
   <body>
     <main class="app">
-      <h1>SmartPass</h1>
+      <header class="titlebar">
+        <span class="brand">SmartPass</span>
+        <button id="themeToggle" class="icon-btn theme-toggle" type="button" aria-label="Toggle theme">
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+          </svg>
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+          </svg>
+        </button>
+      </header>
 
-      <section class="output">
-        <input type="text" id="passwordOutput" readonly aria-label="Generated password" />
-        <button id="copyBtn" title="Copy (auto-clears in 30s)">Copy</button>
+      <section class="readout">
+        <span class="eyebrow">Generated</span>
+        <div class="password-field">
+          <textarea id="passwordOutput" readonly rows="1" aria-label="Generated password"></textarea>
+          <button id="copyBtn" class="icon-btn" type="button" aria-label="Copy password (auto-clears after 30 seconds)" title="Copy (auto-clears in 30s)">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="12" height="12" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </button>
+        </div>
+        <div class="entropy" aria-hidden="true">
+          <div class="entropy-track">
+            <div class="entropy-fill" id="entropyFill"></div>
+          </div>
+          <span class="entropy-bits" id="entropyBits">— bits</span>
+        </div>
+        <p id="detectStatus" class="detect-status" hidden></p>
       </section>
 
-      <p id="detectStatus" class="detect-status" hidden></p>
-
-      <section class="mode">
-        <label><input type="radio" name="mode" value="password" checked /> Random</label>
-        <label><input type="radio" name="mode" value="pronounceable" /> Pronounceable</label>
-        <label><input type="radio" name="mode" value="passphrase" /> Passphrase</label>
+      <section class="mode-tabs">
+        <label>
+          <input type="radio" name="mode" value="password" checked />
+          <span>Random</span>
+        </label>
+        <label>
+          <input type="radio" name="mode" value="pronounceable" />
+          <span>Pronounceable</span>
+        </label>
+        <label>
+          <input type="radio" name="mode" value="passphrase" />
+          <span>Passphrase</span>
+        </label>
       </section>
 
       <section class="options" id="passwordOptions">
-        <label>Length: <span id="lengthValue">16</span>
+        <label class="option option-length">
+          <span class="option-label">Length</span>
+          <span class="length-value" id="lengthValue">16</span>
           <input type="range" id="lengthRange" min="8" max="64" value="16" />
         </label>
-        <label><input type="checkbox" id="optUppercase" checked /> Uppercase (A-Z)</label>
-        <label><input type="checkbox" id="optLowercase" checked /> Lowercase (a-z)</label>
-        <label><input type="checkbox" id="optNumbers" checked /> Numbers (0-9)</label>
-        <label><input type="checkbox" id="optSymbols" checked /> Symbols (!@#$)</label>
-        <label><input type="checkbox" id="optExcludeAmbiguous" /> Exclude ambiguous (Il1O0)</label>
+        <label class="option"><input type="checkbox" id="optUppercase" checked /><span>Uppercase (A-Z)</span></label>
+        <label class="option"><input type="checkbox" id="optLowercase" checked /><span>Lowercase (a-z)</span></label>
+        <label class="option"><input type="checkbox" id="optNumbers" checked /><span>Numbers (0-9)</span></label>
+        <label class="option"><input type="checkbox" id="optSymbols" checked /><span>Symbols (!@#$)</span></label>
+        <label class="option option-wide"><input type="checkbox" id="optExcludeAmbiguous" /><span>Exclude ambiguous (Il1O0)</span></label>
       </section>
 
       <div class="actions">
-        <button id="generateBtn">Generate</button>
-        <button id="fillBtn" hidden>Fill field</button>
+        <button id="generateBtn" class="btn btn-primary" type="button">Generate</button>
+        <button id="fillBtn" class="btn btn-secondary" type="button" hidden>Fill field</button>
       </div>
 
       <section class="history">
         <div class="history-header">
-          <h2>Recent (local only)</h2>
-          <button id="clearHistoryBtn">Clear</button>
+          <h2>Recent · local only</h2>
+          <button id="clearHistoryBtn" class="link-btn" type="button">Clear</button>
         </div>
-        <ul id="historyList"></ul>
+        <ul id="historyList" class="history-list"></ul>
       </section>
     </main>
     <script src="popup.js"></script>

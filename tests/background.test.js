@@ -44,6 +44,9 @@ function createChromeMock() {
         }),
       },
     },
+    notifications: {
+      create: jest.fn(),
+    },
   };
   return { chrome, listeners };
 }
@@ -143,6 +146,14 @@ describe('background', () => {
     await expect(
       listeners.contextMenuClicked({ menuItemId: bg.CONTEXT_MENU_FILL_ID }, { id: 1 })
     ).resolves.toBeUndefined();
+  });
+
+  it('shows a notification when a restricted page blocks injection, instead of failing silently', async () => {
+    chrome.scripting.executeScript.mockRejectedValueOnce(new Error('Cannot access a chrome:// URL'));
+    await listeners.contextMenuClicked({ menuItemId: bg.CONTEXT_MENU_FILL_ID }, { id: 1 });
+    expect(chrome.notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'basic', title: 'SmartPass' })
+    );
   });
 
   it('generates and copies on the active tab for the generate-and-copy hotkey', async () => {

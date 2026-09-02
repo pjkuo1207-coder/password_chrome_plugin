@@ -54,6 +54,21 @@ async function generateAndCopy(tabId) {
   return chrome.tabs.sendMessage(tabId, { type: 'SMARTPASS_COPY_PASSWORD', password });
 }
 
+// The most common real-world failure here is a restricted page (chrome://,
+// the Web Store, PDF viewer) where extensions can never inject scripts, no
+// matter what permissions are granted — there's no popup open at this point
+// to show that in, so a desktop notification is the only way the user finds
+// out anything happened at all instead of silent no-op.
+function notifyUnsupportedPage() {
+  if (typeof chrome === 'undefined' || !chrome.notifications?.create) return;
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon48.png',
+    title: 'SmartPass',
+    message: '這個頁面無法使用 SmartPass（例如 Chrome 內建頁面或線上應用程式商店）。請切換到一般網站再試一次。',
+  });
+}
+
 // Guarded so this file can be `require`d from tests without a chrome global.
 if (typeof chrome !== 'undefined' && chrome.runtime?.onInstalled) {
   chrome.runtime.onInstalled.addListener(createContextMenus);
@@ -64,9 +79,15 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onInstalled) {
     // Store, PDF viewer); there's no popup open here to surface an error to,
     // so just log for debugging rather than throwing from an event handler.
     if (info.menuItemId === CONTEXT_MENU_FILL_ID) {
-      await generateAndFill(tab.id).catch((err) => console.warn('[SmartPass] fill failed', err));
+      await generateAndFill(tab.id).catch((err) => {
+        console.warn('[SmartPass] fill failed', err);
+        notifyUnsupportedPage();
+      });
     } else if (info.menuItemId === CONTEXT_MENU_COPY_ID) {
-      await generateAndCopy(tab.id).catch((err) => console.warn('[SmartPass] copy failed', err));
+      await generateAndCopy(tab.id).catch((err) => {
+        console.warn('[SmartPass] copy failed', err);
+        notifyUnsupportedPage();
+      });
     }
   });
 
@@ -74,7 +95,10 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onInstalled) {
     if (command !== 'generate-and-copy') return;
     const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!activeTab?.id) return;
-    await generateAndCopy(activeTab.id).catch((err) => console.warn('[SmartPass] copy failed', err));
+    await generateAndCopy(activeTab.id).catch((err) => {
+      console.warn('[SmartPass] copy failed', err);
+      notifyUnsupportedPage();
+    });
   });
 }
 

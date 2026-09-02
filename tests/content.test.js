@@ -55,17 +55,30 @@ describe('fillFocusedPasswordField', () => {
     expect(changeHandler).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back to the first password field on the page if none is focused', () => {
+  it('fills a focused plain text field, not just password fields', () => {
+    // The context menu's "fill this field" entry works on any editable
+    // field the user right-clicked — a "confirm password" input a site
+    // left as type="text", or any other text-like field.
     document.body.innerHTML = '<input type="text" id="other" /><input type="password" id="pw" />';
     document.getElementById('other').focus();
+
+    const result = fillFocusedPasswordField('plain-fill');
+    expect(result).toBe(true);
+    expect(document.getElementById('other').value).toBe('plain-fill');
+    expect(document.getElementById('pw').value).toBe('');
+  });
+
+  it('falls back to the first password field on the page when nothing fillable is focused', () => {
+    document.body.innerHTML = '<button id="btn">Go</button><input type="password" id="pw" />';
+    document.getElementById('btn').focus();
 
     const result = fillFocusedPasswordField('fallback-pw');
     expect(result).toBe(true);
     expect(document.getElementById('pw').value).toBe('fallback-pw');
   });
 
-  it('returns false when there is no password field on the page', () => {
-    document.body.innerHTML = '<input type="text" />';
+  it('returns false when there is no fillable or password field on the page', () => {
+    document.body.innerHTML = '<button id="btn">Go</button>';
     expect(fillFocusedPasswordField('x')).toBe(false);
   });
 });

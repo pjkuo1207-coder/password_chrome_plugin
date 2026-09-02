@@ -3,7 +3,7 @@
   "name": "SmartPass — Smart Password Generator",
   "version": "0.1.0",
   "description": "Privacy-first password generator with smart DOM rule matching, passphrase/pronounceable modes, and auto-clearing clipboard. Fully offline.",
-  "permissions": ["storage", "activeTab", "scripting", "contextMenus"],
+  "permissions": ["storage", "activeTab", "scripting", "contextMenus", "notifications"],
   "background": {
     "service_worker": "background.js"
   },
