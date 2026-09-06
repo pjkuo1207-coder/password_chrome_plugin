@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartPass Privacy Policy</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1a1a2e;
+        --muted: #5a5a72;
+        --accent: #6d28d9;
+        --card: #f6f5fb;
+        --border: #e3e1ee;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14121f;
+          --fg: #f0eef8;
+          --muted: #a8a4c0;
+          --accent: #b794f6;
+          --card: #1d1a2e;
+          --border: #322d4a;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", Roboto, sans-serif;
+        line-height: 1.7;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--accent);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        margin-bottom: 0.75rem;
+      }
+      h1 {
+        font-size: 1.9rem;
+        margin: 0 0 0.25rem;
+      }
+      .updated {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 0 0 2.5rem;
+      }
+      h2 {
+        font-size: 1.15rem;
+        margin: 2.5rem 0 0.75rem;
+        padding-top: 0.25rem;
+        border-top: 1px solid var(--border);
+      }
+      h2:first-of-type {
+        border-top: none;
+        padding-top: 0;
+      }
+      ul {
+        padding-left: 1.25rem;
+        margin: 0.75rem 0;
+      }
+      li {
+        margin: 0.4rem 0;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+      }
+      code {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.1rem 0.35rem;
+        font-size: 0.9em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.92rem;
+      }
+      th, td {
+        text-align: left;
+        padding: 0.5rem 0.6rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .lang-divider {
+        margin: 3.5rem 0 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .lang-divider::before,
+      .lang-divider::after {
+        content: "";
+        display: inline-block;
+        width: 3rem;
+        height: 1px;
+        background: var(--border);
+        vertical-align: middle;
+        margin: 0 0.75rem;
+      }
+      footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="badge">SmartPass</span>
+      <h1>隱私權政策 / Privacy Policy</h1>
+      <p class="updated">最後更新 / Last updated: 2026-09-06</p>
+
+      <h2>總覽 Overview</h2>
+      <p>
+        SmartPass 不蒐集、不儲存、不傳輸、也不與任何第三方分享您的個人資料、瀏覽紀錄，或您產生的任何密碼。所有功能完全在您的瀏覽器本機離線運作，沒有任何對外部伺服器的網路請求。
+      </p>
+
+      <h2>我們如何處理資料 What we do with data</h2>
+      <ul>
+        <li>
+          產生的密碼歷史紀錄（最多 5 筆）僅儲存在您裝置上的
+          <code>chrome.storage.local</code>，不會同步、也不會傳送到任何伺服器。
+        </li>
+        <li>本擴充功能不會發出任何網路請求（no network requests of any kind）。</li>
+        <li>
+          只有在您主動觸發偵測或填入功能時（透過彈出視窗、鍵盤快捷鍵，或右鍵選單），才會讀取目前分頁的密碼欄位內容，且該內容不會被傳送到任何地方，只用於本機比對與填入。
+        </li>
+        <li>所有隨機性皆透過瀏覽器原生的 Web Crypto API（<code>crypto.getRandomValues</code>）產生，不使用
+          <code>Math.random()</code>。</li>
+        <li>本擴充功能不要求 <code>&lt;all_urls&gt;</code> 或任何主機權限。</li>
+      </ul>
+
+      <h2>權限使用說明 Permissions</h2>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>權限</th>
+              <th>用途</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>storage</code></td>
+              <td>將最近 5 筆密碼歷史存於 chrome.storage.local，純本機儲存，不同步、不連網。</td>
+            </tr>
+            <tr>
+              <td><code>activeTab</code></td>
+              <td>使用者主動開啟彈出視窗、觸發右鍵選單或鍵盤快捷鍵時，取得目前分頁的短暫存取權，用於偵測/填入密碼欄位。</td>
+            </tr>
+            <tr>
+              <td><code>scripting</code></td>
+              <td>依需求將偵測/填入腳本注入目前分頁，僅在使用者觸發時執行，不在所有網站上常駐。</td>
+            </tr>
+            <tr>
+              <td><code>contextMenus</code></td>
+              <td>提供右鍵選單的「產生並填入 / 產生並複製」功能，不涉及任何頁面資料存取。</td>
+            </tr>
+            <tr>
+              <td><code>notifications</code></td>
+              <td>
+                當使用者透過快捷鍵在不支援腳本注入的頁面（如 chrome:// 內建頁）觸發產生密碼時，顯示一則本機桌面通知，不涉及任何資料蒐集。
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>聯絡我們 Contact</h2>
+      <p>如有任何隱私權相關問題，請透過以下方式聯絡：<code>pjkuo1207@gmail.com</code></p>
+
+      <div class="lang-divider">ENGLISH VERSION</div>
+
+      <h2>Overview</h2>
+      <p>
+        SmartPass does not collect, store, transmit, or share any personal data, browsing
+        history, or generated passwords with any external server. All functionality runs
+        entirely offline within your browser.
+      </p>
+
+      <h2>What we do with data</h2>
+      <ul>
+        <li>
+          Generated password history (up to 5 entries) is stored only in
+          <code>chrome.storage.local</code> on your device and is never synced or transmitted.
+        </li>
+        <li>The extension makes no network requests of any kind.</li>
+        <li>
+          Page content is read only when you explicitly trigger detection or fill-in (via the
+          popup, a keyboard shortcut, or the right-click menu), and is never sent anywhere — it
+          is used only for local matching and filling.
+        </li>
+        <li>
+          All randomness comes from the browser's native Web Crypto API
+          (<code>crypto.getRandomValues</code>), never <code>Math.random()</code>.
+        </li>
+        <li>The extension requests no <code>&lt;all_urls&gt;</code> or other host permissions.</li>
+      </ul>
+
+      <h2>Permissions</h2>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Permission</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>storage</code></td>
+              <td>Stores the last 5 password history entries in chrome.storage.local, local-only, never synced or sent over the network.</td>
+            </tr>
+            <tr>
+              <td><code>activeTab</code></td>
+              <td>Grants brief access to the current tab only when the user opens the popup, triggers the context menu, or uses a keyboard shortcut, to detect/fill the password field.</td>
+            </tr>
+            <tr>
+              <td><code>scripting</code></td>
+              <td>Injects the detection/fill script into the current tab on demand, only when explicitly triggered by the user — not persistent on every site.</td>
+            </tr>
+            <tr>
+              <td><code>contextMenus</code></td>
+              <td>Provides the "Generate & fill" / "Generate & copy" right-click menu items; does not access any page data on its own.</td>
+            </tr>
+            <tr>
+              <td><code>notifications</code></td>
+              <td>Shows a local desktop notification when a keyboard shortcut is used on a page that does not support script injection (e.g. chrome:// pages); involves no data collection.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Contact</h2>
+      <p>For any privacy-related questions, please contact: <code>pjkuo1207@gmail.com</code></p>
+
+      <footer>SmartPass — Smart Password Generator</footer>
+    </main>
+  </body>
+</html>
